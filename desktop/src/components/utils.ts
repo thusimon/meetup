@@ -5,10 +5,8 @@ export const messageFactory = (() => {
   let instance: Messages;
   return {
     getInstance: function(ipcRenderer: IpcRenderer){
-        if (instance == null) {
+        if (!instance) {
             instance = new Messages(ipcRenderer);
-            // Hide the constructor so the returned object can't be new'd...
-            instance.constructor = null;
         }
         return instance;
     }

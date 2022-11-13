@@ -6,10 +6,8 @@ class Messages {
   messagesPromises: {[key: string]: Deferred<EventDataExType>} = {};
   ipcRenderer: Electron.IpcRenderer;
   constructor(ipcRenderer: IpcRenderer) {
-    console.log(888);
     this.ipcRenderer = ipcRenderer;
     ipcRenderer.on(EventChannelFromMain, (evt: IpcRendererEvent, evtData: EventDataExType) => {
-      console.log(8, evtData);
       const id = evtData.id;
       const promise = this.messagesPromises[id];
       if (!promise) {
