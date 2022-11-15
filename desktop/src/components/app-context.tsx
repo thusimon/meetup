@@ -1,15 +1,13 @@
 import { createContext, useContext, useReducer, ReactNode, ReactElement } from 'react';
+import { Actions } from '../common/constants';
 
 export interface ContextDataType {
-  name?: string
+  name?: string;
 }
 
-export enum Actions {
-};
-
 export interface ActionType {
-  type: Actions
-  data: any
+  type: Actions;
+  data: any;
 };
 
 export interface ContextType {
@@ -17,11 +15,18 @@ export interface ContextType {
   dispatch: (message: ActionType) => void
 }
 
-const initContextData: ContextDataType = {};
+const initContextData: ContextDataType = {
+};
 
 const AppReducer = (state: ContextDataType, action: ActionType): ContextDataType => {
   const { type, data } = action;
   switch (type) {
+    case Actions.SetName: {
+      return {
+        ...state,
+        name: data
+      };
+    }
     default:
       return state;
   }
@@ -30,7 +35,7 @@ const AppReducer = (state: ContextDataType, action: ActionType): ContextDataType
 const AppContext = createContext<ContextType>({} as any);
 
 interface ProviderPropType {
-  children: ReactNode
+  children: ReactNode;
 };
 
 export const AppContextProvider = ({ children }: ProviderPropType): ReactElement => {

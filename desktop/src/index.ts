@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, ipcMain } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, session } from 'electron';
 import { Init_Window_Ratio, EventChannelFromContent } from './common/constants';
 import { init } from './background/init';
 import { backgroundEventHandler } from './background/event-hander';
@@ -13,8 +13,18 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
+const devCSP = `default-src 'self' ws: 'unsafe-eval' 'unsafe-inline';`
 let mainWindow: BrowserWindow;
 const createWindow = (): void => {
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [devCSP]
+      }
+    })
+  });
+
   // Create the browser window.
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({

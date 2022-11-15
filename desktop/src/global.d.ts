@@ -1,5 +1,5 @@
 import { IpcRenderer } from 'electron';
-import Messages from '../components/messages';
+import Messages from './components/messages';
 
 declare global {
   var ipcRenderer: IpcRenderer;

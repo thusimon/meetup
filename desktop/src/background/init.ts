@@ -7,6 +7,6 @@ export const init = async () => {
     await fsp.access('./info.json');
   } catch (e) {
     const initData = {}
-    await fsp.writeFile('./info.json', JSON.stringify(initData))
+    await fsp.writeFile('./info.json', JSON.stringify(initData), { encoding: 'utf8' });
   }
 };

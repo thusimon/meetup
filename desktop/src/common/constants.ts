@@ -4,7 +4,7 @@ export const EventChannelFromMain = 'message:fromMain';
 
 export interface EventDataType {
   action: Actions
-  data: any
+  data?: any
 };
 
 export interface EventDataExType extends EventDataType{
@@ -13,4 +13,10 @@ export interface EventDataExType extends EventDataType{
 
 export enum Actions {
   GetName,
+  SetName,
+};
+
+export const VideoStreamConstraints = {
+  audio: true,
+  video: true,
 };

@@ -1,13 +1,22 @@
 import { createRoot } from 'react-dom/client';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppContextProvider } from './app-context';
-import { messageFactory } from './utils';
 import Main from './main';
+import Splash from './splash';
+import Login from './login';
 
 const App = (): JSX.Element => {
   return (
-    <AppContextProvider>
-      <Main />
-    </AppContextProvider>
+    <HashRouter>
+      <AppContextProvider>
+        <Routes>
+          <Route path='/' element={<Navigate replace to='/splash' />} />
+          <Route path='/splash' element={<Splash />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/main' element={<Main />} />
+        </Routes>
+      </AppContextProvider>
+    </HashRouter>
   );
 }
 
