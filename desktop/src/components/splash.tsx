@@ -30,9 +30,9 @@ const Splash = () => {
       ws.onerror = function(evt) {
         console.log(31, evt);
       }
-      // setTimeout(() => {
-      //   navigate('/main');
-      // }, 1000);
+      setTimeout(() => {
+        navigate('/main');
+      }, 1000);
     }
     init();
   }, []);

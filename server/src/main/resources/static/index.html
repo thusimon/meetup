@@ -1,0 +1,19 @@
+<html>
+<body>
+Hello
+<script>
+console.log(6, 'running ');
+const ws = new WebSocket('ws://localhost:8080/sockets');
+ws.onopen = function(evt) {
+  console.log(28, evt);
+}
+ws.onmessage = function(data) {
+  console.log(25, data);
+}
+ws.onerror = function(evt) {
+  console.log(31, evt);
+}
+console.log(16, 'done');
+</script>
+</body>
+</html>
