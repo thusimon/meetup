@@ -30,11 +30,7 @@ export const rules: Required<ModuleOptions>['rules'] = [
   },
   {
     test: /\.(png|jpe?g|gif|svg)$/i,
-    use: [
-      {
-        loader: 'file-loader',
-      },
-    ],
+    type: 'asset'
   },
   {
     test: /\.s[ac]ss$/i,
@@ -44,9 +40,6 @@ export const rules: Required<ModuleOptions>['rules'] = [
       },
       {
         loader: 'css-loader' // Translates CSS into CommonJS
-      },
-      {
-        loader: 'resolve-url-loader'
       },
       {
         loader: 'sass-loader' // Compiles Sass to CSS

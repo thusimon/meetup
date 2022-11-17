@@ -13,7 +13,7 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-const devCSP = `default-src 'self' ws: 'unsafe-eval' 'unsafe-inline';`
+const devCSP = `default-src 'self' ws: data: 'unsafe-eval' 'unsafe-inline';`
 let mainWindow: BrowserWindow;
 const createWindow = (): void => {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {

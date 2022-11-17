@@ -18,6 +18,11 @@ public class SocketTextHandler extends TextWebSocketHandler {
     }
 
     @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        System.out.println("22: " + session.getId());
+    }
+
+    @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
         System.out.println("Server transport error: " + exception.getMessage());
     }
