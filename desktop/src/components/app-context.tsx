@@ -1,12 +1,12 @@
 import { createContext, useContext, useReducer, ReactNode, ReactElement } from 'react';
-import { Actions } from '../common/constants';
+import { AppContextActions } from '../common/constants';
 
 export interface ContextDataType {
   name?: string;
 }
 
 export interface ActionType {
-  type: Actions;
+  type: AppContextActions;
   data: any;
 };
 
@@ -21,7 +21,7 @@ const initContextData: ContextDataType = {
 const AppReducer = (state: ContextDataType, action: ActionType): ContextDataType => {
   const { type, data } = action;
   switch (type) {
-    case Actions.SetName: {
+    case AppContextActions.SetName: {
       return {
         ...state,
         name: data

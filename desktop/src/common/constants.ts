@@ -3,7 +3,7 @@ export const EventChannelFromContent = 'message:fromContent';
 export const EventChannelFromMain = 'message:fromMain';
 
 export interface EventDataType {
-  action: Actions
+  action: ElectronActions
   data?: any
 };
 
@@ -11,9 +11,17 @@ export interface EventDataExType extends EventDataType{
   id: string;
 };
 
-export enum Actions {
+export enum AppContextActions {
+  SetName
+};
+
+export enum ElectronActions {
   GetName,
   SetName,
+  InitSocket,
+  OnSocketMessage,
+  OnSocketClose,
+  SendSocketMessage
 };
 
 export const VideoStreamConstraints = {

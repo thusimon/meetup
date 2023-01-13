@@ -1,6 +1,6 @@
 import { useState, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Actions } from '../common/constants';
+import { ElectronActions, AppContextActions } from '../common/constants';
 import { useAppContext } from './app-context';
 import './login.scss';
 
@@ -13,8 +13,8 @@ const Login = () => {
     setName(evt.target.value);
   }
   const onBtnClickHandler = async () => {
-    const result = await messager.sendMessage({ action: Actions.SetName, data: name });
-    dispatch({ type: Actions.SetName, data: result.data});
+    const result = await messager.sendMessage({ action: ElectronActions.SetName, data: name });
+    dispatch({ type: AppContextActions.SetName, data: result.data });
     navigate('/main');
   }
 

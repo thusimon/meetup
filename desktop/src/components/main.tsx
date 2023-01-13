@@ -7,7 +7,7 @@ import './main.scss';
 const Main = () => {
   const viedoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream>(null);
-  const [streamLoading, setStreamLoading] = useState(false);
+  const [videoState, setVideoState] = useState(0);
   const { state } = useAppContext();
 
   const videoMetadataLoadHandler = function() {
@@ -26,16 +26,17 @@ const Main = () => {
     videoEle.removeEventListener('loadedmetadata', videoMetadataLoadHandler);
     videoEle.srcObject = null;
     setStream(null);
-    setStreamLoading(false);
+    setVideoState(0);
   }
 
   const connectLocalVideoStream = async () => {
     try {
-      setStreamLoading(true);
+      setVideoState(1);
       const stream = await navigator.mediaDevices.getUserMedia(VideoStreamConstraints);
       setStream(stream);
       const videoEle = viedoRef.current;
       videoEle.srcObject = stream;
+      setVideoState(2);
       // videoEle.addEventListener('loadedmetadata', () => {
       //   videoMetadataLoadHandler();
       //   setStreamLoading(false);
@@ -46,18 +47,41 @@ const Main = () => {
     };
   }
 
+  const getVideoClass = () => {
+    switch (videoState) {
+      case 0: {
+        // static
+        return 'video-static';
+      }
+      case 1: {
+        // opening
+        return 'video-opening';
+      }
+      case 2: {
+        // streaming
+        return 'video-streaming';
+      }
+      default: {
+        return 'video-static';
+      }
+    }
+  }
+
   useEffect(() => {
   }, []);
 
   return <div id='main-container'>
-    <header>Welcome, {state.name}</header>
-    <div id='video_container' className={setStreamLoading ? 'video-loading' : ''}>
-      <video id='video' muted autoPlay ref={viedoRef}></video>
+    <div id='room-container'></div>
+    <div id='meeting-container'>
+      <div id='video_container' className={getVideoClass()}>
+        <video id='video' muted autoPlay ref={viedoRef}></video>
+      </div>
+      <div id='button-group'>
+        <button id='connect' onClick={connectLocalVideoStream}>Connect</button>
+        <button id='disconnect' onClick={disconnectLocalVideoStream}>Disconnect</button>
+      </div>
     </div>
-    <div id='button-group'>
-      <button id='connect' onClick={connectLocalVideoStream}>Connect</button>
-      <button id='disconnect' onClick={disconnectLocalVideoStream}>Disconnect</button>
-    </div>
+    <div id='chat-container'></div>
   </div>
 
 };

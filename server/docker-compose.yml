@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  meetup-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    restart: always
+    ports:
+      - 8081:8081

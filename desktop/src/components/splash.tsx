@@ -1,38 +1,38 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from './app-context';
-import { Actions } from '../common/constants';
+import { ElectronActions, AppContextActions } from '../common/constants';
 
-import SplashLoading from '../assets/splash-loading.svg';
+import SplashLoadingIcon from '../assets/splash-loading.svg';
+import ErrorIcon from '../assets/error.svg';
+
 import './splash.scss';
 
 const Splash = () => {
   const { dispatch } = useAppContext();
   const navigate = useNavigate();
+  const [ err, setErr ] = useState(null);
   useEffect(() => {
     const init = async () => {
-      const result  = await messager.sendMessage({ action: Actions.GetName });
-      const name = result.data; 
+      const getNameResult  = await messager.sendMessage({ action: ElectronActions.GetName });
+      const name = getNameResult.data; 
       if (!name) {
         setTimeout(() => {
           navigate('/login');
         }, 1000);
         return;
       }
-      dispatch({ type: Actions.SetName, data: name});
-      const ws = new WebSocket('ws://localhost:8080/sockets');
-      ws.onopen = function(evt) {
-        console.log(28, evt);
+      dispatch({ type: AppContextActions.SetName, data: name});
+      const initSocketResult = await messager.sendMessage({ action: ElectronActions.InitSocket, data: name});
+      if (initSocketResult.data && initSocketResult.data.err) {
+        // socket init error happens
+        console.log(29, initSocketResult.data);
+        setErr(initSocketResult.data.err.toString());
+      } else {
+        setTimeout(() => {
+          navigate('/main');
+        }, 1000);
       }
-      ws.onmessage = function(data) {
-        console.log(25, data);
-      }
-      ws.onerror = function(evt) {
-        console.log(31, evt);
-      }
-      // setTimeout(() => {
-      //   navigate('/main');
-      // }, 1000);
     }
     init();
   }, []);
@@ -41,7 +41,11 @@ const Splash = () => {
     <div id='message'>
       MeetUp
     </div>
-    <img src={SplashLoading} />
+    <img src={SplashLoadingIcon} />
+    <div id='error-container' className={err ? 'show' : 'hide'}>
+      <img src={ErrorIcon} />
+      <p>{err}</p>
+    </div>
   </div>
 };
 
