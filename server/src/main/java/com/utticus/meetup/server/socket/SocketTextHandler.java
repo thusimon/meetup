@@ -1,7 +1,10 @@
 package com.utticus.meetup.server.socket;
 
+import com.google.gson.Gson;
 import com.utticus.meetup.server.cache.UserMemoryCache;
 import com.utticus.meetup.server.model.User;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -13,10 +16,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class SocketTextHandler extends TextWebSocketHandler {
+    private static final Logger logger = LogManager.getLogger(SocketTextHandler.class);
+
+    private static final Gson gson = new Gson();
     @Autowired
     UserMemoryCache userMemoryCache;
 
@@ -24,8 +31,8 @@ public class SocketTextHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message)
             throws InterruptedException, IOException {
         String payload = message.getPayload();
-        System.out.println("16: " + session.getId());
-        session.sendMessage(new TextMessage("Resp: " + payload));
+        String textResp = socketMessageHandler(payload, session);
+        session.sendMessage(new TextMessage(textResp));
     }
 
     @Override
@@ -38,19 +45,42 @@ public class SocketTextHandler extends TextWebSocketHandler {
             name = URLDecoder.decode(nameVals.get(0), "UTF-8");
         }
         userMemoryCache.add(id, new User(id, name));
+        logger.info("user {} connected", name);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        System.out.println("socket closed: id=" + session.getId());
-        System.out.println(status.getCode() + ", " + status.getReason());
-
+        logger.info("Socket {} closed, code={}, reason={}", session.getId(), status.getCode(), status.getReason());
         userMemoryCache.delete(session.getId());
-        System.out.println("current user size: " + userMemoryCache.size());
+        logger.info("There are {} users now", userMemoryCache.size());
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
-        System.out.println("Server transport error: " + exception.getMessage());
+        logger.error("Server transport error: {}", exception.getMessage());
+    }
+
+    private String socketMessageHandler(String message, WebSocketSession session) {
+        String textResp = "";
+        switch (message) {
+            case "GetAllUsers": {
+                List<User> users = new ArrayList<>();
+                for (User user : userMemoryCache.getAll()) {
+                    User clonedUser = null;
+                    try {
+                        clonedUser = (User) user.clone();
+                    } catch (CloneNotSupportedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (clonedUser.getId() == session.getId()) {
+                        clonedUser.setSelf(true);
+                    }
+                    users.add(clonedUser);
+                }
+                textResp = gson.toJson(users);
+                break;
+            }
+        }
+        return textResp;
     }
 }

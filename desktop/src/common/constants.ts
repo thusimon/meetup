@@ -1,6 +1,7 @@
 export const Init_Window_Ratio = 0.8;
 export const EventChannelFromContent = 'message:fromContent';
 export const EventChannelFromMain = 'message:fromMain';
+export const EventChannelFromSocket = 'message:fromSocketServer';
 
 export interface EventDataType {
   action: ElectronActions
@@ -23,6 +24,10 @@ export enum ElectronActions {
   OnSocketClose,
   SendSocketMessage
 };
+
+export enum SocketActions {
+  GetAllUsers='GetAllUsers'
+}
 
 export const VideoStreamConstraints = {
   audio: true,

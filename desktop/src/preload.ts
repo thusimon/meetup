@@ -11,4 +11,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 process.once('loaded', () => {
   const messager = messageFactory.getInstance(ipcRenderer);
   contextBridge.exposeInMainWorld('messager', messager);
+  // contextBridge.exposeInMainWorld('myApp', {
+  //   onFoo: (handler) => ipcRenderer.on('foo', (event, ...args) => handler(...args)),
+  //   doThing: () => ipcRenderer.send('do-thing'),
+  // });
 });

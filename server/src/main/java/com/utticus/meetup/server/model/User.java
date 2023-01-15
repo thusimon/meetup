@@ -1,8 +1,10 @@
 package com.utticus.meetup.server.model;
 
-public class User {
+public class User implements Cloneable {
     private String id;
     private String name;
+
+    private boolean self;
 
     public User(String id, String name) {
         this.id = id;
@@ -23,5 +25,18 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isSelf() {
+        return self;
+    }
+
+    public void setSelf(boolean self) {
+        this.self = self;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

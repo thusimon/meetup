@@ -1,11 +1,13 @@
 import fs from 'fs'
 import { IpcMainEvent } from 'electron';
-import { EventDataType, EventChannelFromMain, ElectronActions } from '../common/constants';
+import { EventDataType, EventChannelFromMain, EventChannelFromSocket, ElectronActions } from '../common/constants';
 import Socket from './socket';
 
 const fsp = fs.promises;
 
 let ws: Socket;
+
+const socketMessages: {[key: string]: object} = {};
 
 export const backgroundEventHandler = async (evt: IpcMainEvent, msg: EventDataType) => {
   const { action, data } = msg;
@@ -30,13 +32,13 @@ export const backgroundEventHandler = async (evt: IpcMainEvent, msg: EventDataTy
         await ws.connect();
         msg.data = {};
         ws.onMessage((wsEvent) => {
-          sender.send(EventChannelFromMain, {
+          sender.send(EventChannelFromSocket, {
             action: ElectronActions.OnSocketMessage,
             data: wsEvent.data
           });
         });
         ws.onClose((wsEvent) => {
-          sender.send(EventChannelFromMain, {
+          sender.send(EventChannelFromSocket, {
             action: ElectronActions.OnSocketClose,
             data: wsEvent.reason
           });

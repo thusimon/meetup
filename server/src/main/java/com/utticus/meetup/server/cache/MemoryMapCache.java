@@ -1,6 +1,7 @@
 package com.utticus.meetup.server.cache;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MemoryMapCache<String, T> {
@@ -29,5 +30,9 @@ public class MemoryMapCache<String, T> {
 
     public int size() {
         return cache.size();
+    }
+
+    public List<T> getAll() {
+        return cache.values().stream().toList();
     }
 }
