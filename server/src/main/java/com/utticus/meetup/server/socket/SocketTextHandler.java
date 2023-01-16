@@ -17,7 +17,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class SocketTextHandler extends TextWebSocketHandler {
@@ -61,7 +63,8 @@ public class SocketTextHandler extends TextWebSocketHandler {
     }
 
     private String socketMessageHandler(String message, WebSocketSession session) {
-        String textResp = "";
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("msg", message);
         switch (message) {
             case "GetAllUsers": {
                 List<User> users = new ArrayList<>();
@@ -77,10 +80,10 @@ public class SocketTextHandler extends TextWebSocketHandler {
                     }
                     users.add(clonedUser);
                 }
-                textResp = gson.toJson(users);
+                resp.put("data", users);
                 break;
             }
         }
-        return textResp;
+        return gson.toJson(resp);
     }
 }

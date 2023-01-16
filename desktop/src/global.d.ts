@@ -1,9 +1,11 @@
 import { IpcRenderer } from 'electron';
 import Messages from './components/messages';
+import SocketListener from './components/socket-listener';
 
 declare global {
-  var ipcRenderer: IpcRenderer;
-  var messager: Messages;
+  const ipcRenderer: IpcRenderer;
+  const messager: Messages;
+  const socketListener: SocketListener;
 }
 
 export {};

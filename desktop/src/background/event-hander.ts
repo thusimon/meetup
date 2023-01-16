@@ -7,8 +7,6 @@ const fsp = fs.promises;
 
 let ws: Socket;
 
-const socketMessages: {[key: string]: object} = {};
-
 export const backgroundEventHandler = async (evt: IpcMainEvent, msg: EventDataType) => {
   const { action, data } = msg;
   const sender = evt.sender;
@@ -34,7 +32,7 @@ export const backgroundEventHandler = async (evt: IpcMainEvent, msg: EventDataTy
         ws.onMessage((wsEvent) => {
           sender.send(EventChannelFromSocket, {
             action: ElectronActions.OnSocketMessage,
-            data: wsEvent.data
+            data: JSON.parse(wsEvent.data as string)
           });
         });
         ws.onClose((wsEvent) => {

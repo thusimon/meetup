@@ -1,28 +1,35 @@
-import { useEffect } from "react";
-import { ElectronActions } from "../common/constants";
-import SocketMessages from "./messages-socket";
+import { useEffect, useState } from "react";
+import { ElectronActions, EventDataType, SocketActions } from "../common/constants";
 
 import './room.scss';
 
 const Room = () => {
-
-  const onSocketMessageHandler = (socketMessage: any) => {
-    console.log(socketMessage);
-  }
+  const [users, setUsers] = useState([]);
   useEffect(() => {
     const init = async () => {
-      const socketMessage = new SocketMessages(onSocketMessageHandler);
-      const getUsersResult  = await messager.sendMessage({
-        action: ElectronActions.SendSocketMessage,
-        data: 'GetAllUsers'
+      socketListener.registerListener((socketResp: EventDataType) => {
+        const {msg, data} = socketResp.data;
+        if (msg != SocketActions.GetAllUsers || !data) {
+          return;
+        }
+        setUsers(data);
       });
-      console.log(13, getUsersResult)
+      messager.sendMessage({
+        action: ElectronActions.SendSocketMessage,
+        data: SocketActions.GetAllUsers
+      });
     }
     init();
   }, []);
 
   return <div id='room-container'>
-
+    {
+      users.map((user, idx) => {
+        return <div key={`user-${idx}`}>
+          <span>{user.name}</span>
+        </div>
+      })
+    }
   </div>
 };
 
