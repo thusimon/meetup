@@ -51,7 +51,7 @@ export const backgroundEventHandler = async (evt: IpcMainEvent, msg: EventDataTy
       if (!ws) {
         msg.data = {err: 'socket is not connected'};
       } else {
-        ws.send(msg.data);
+        ws.send(JSON.stringify(msg.data));
       }
       break;
     }

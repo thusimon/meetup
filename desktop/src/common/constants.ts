@@ -26,7 +26,9 @@ export enum ElectronActions {
 };
 
 export enum SocketActions {
-  GetAllUsers = 'GetAllUsers'
+  GetCurrentUser = 'GetCurrentUser',
+  GetAllUsers = 'GetAllUsers',
+  VideoInvite = 'VideoInvite'
 }
 
 export const VideoStreamConstraints = {

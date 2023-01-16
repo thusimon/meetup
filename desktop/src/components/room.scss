@@ -1,3 +1,55 @@
 #room-container {
   width: 10%;
+  border-right: 1px solid gainsboro;
+  .user-row {
+    position: relative;
+    margin: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 1rem;
+    &:hover {
+      background-color: gainsboro;
+    }
+    .user-name {
+      padding-left: 0.25rem;
+    }
+    .user-plus {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      border: none;
+      border-radius: 50%;
+      background-image: url('../assets/plus.svg');
+    }
+    .hover-effect {
+      &:hover {
+        background-color: lightgreen;
+      }
+    }
+    .user-dropdown {
+      position: absolute;
+      right: 0px;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: white;
+      border-radius: 0.25rem;
+      img {
+        border-radius: 50%;
+        &:hover {
+          background-color: lightgreen;
+        }
+      }
+      transition: max-height 0.5s;
+    }
+    .show {
+      max-height: 100%;
+    }
+    .hide {
+      max-height: 0px;
+    }
+  }
 }

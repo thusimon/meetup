@@ -4,8 +4,6 @@ public class User implements Cloneable {
     private String id;
     private String name;
 
-    private boolean self;
-
     public User(String id, String name) {
         this.id = id;
         this.name = name;
@@ -25,14 +23,6 @@ public class User implements Cloneable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public boolean isSelf() {
-        return self;
-    }
-
-    public void setSelf(boolean self) {
-        this.self = self;
     }
 
     @Override

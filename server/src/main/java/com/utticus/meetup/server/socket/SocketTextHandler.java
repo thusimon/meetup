@@ -18,14 +18,20 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class SocketTextHandler extends TextWebSocketHandler {
     private static final Logger logger = LogManager.getLogger(SocketTextHandler.class);
 
     private static final Gson gson = new Gson();
+
+    private final Set<WebSocketSession> webSocketSessionSet = new HashSet<>();
+
     @Autowired
     UserMemoryCache userMemoryCache;
 
@@ -33,7 +39,8 @@ public class SocketTextHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message)
             throws InterruptedException, IOException {
         String payload = message.getPayload();
-        String textResp = socketMessageHandler(payload, session);
+        Map<String, Object> payloadJson = gson.fromJson(payload, Map.class);
+        String textResp = socketMessageHandler(payloadJson, session);
         session.sendMessage(new TextMessage(textResp));
     }
 
@@ -47,6 +54,9 @@ public class SocketTextHandler extends TextWebSocketHandler {
             name = URLDecoder.decode(nameVals.get(0), "UTF-8");
         }
         userMemoryCache.add(id, new User(id, name));
+        webSocketSessionSet.add(session);
+        String allUsers = socketMessageHandler(Map.of("msg", "GetAllUsers"), session);
+        broadcast(allUsers);
         logger.info("user {} connected", name);
     }
 
@@ -54,7 +64,10 @@ public class SocketTextHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         logger.info("Socket {} closed, code={}, reason={}", session.getId(), status.getCode(), status.getReason());
         userMemoryCache.delete(session.getId());
-        logger.info("There are {} users now", userMemoryCache.size());
+        webSocketSessionSet.remove(session);
+        String allUsers = socketMessageHandler(Map.of("msg", "GetAllUsers"), session);
+        broadcast(allUsers);
+        logger.info("There are {} users, {} sessions now", userMemoryCache.size(), webSocketSessionSet.size());
     }
 
     @Override
@@ -62,28 +75,36 @@ public class SocketTextHandler extends TextWebSocketHandler {
         logger.error("Server transport error: {}", exception.getMessage());
     }
 
-    private String socketMessageHandler(String message, WebSocketSession session) {
+    private String socketMessageHandler(Map<String, Object> payload, WebSocketSession session) {
         Map<String, Object> resp = new HashMap<>();
-        resp.put("msg", message);
-        switch (message) {
-            case "GetAllUsers": {
-                List<User> users = new ArrayList<>();
-                for (User user : userMemoryCache.getAll()) {
-                    User clonedUser = null;
-                    try {
-                        clonedUser = (User) user.clone();
-                    } catch (CloneNotSupportedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    if (clonedUser.getId() == session.getId()) {
-                        clonedUser.setSelf(true);
-                    }
-                    users.add(clonedUser);
+        String msg = (String)payload.get("msg");
+        Object data = payload.get("data");
+        resp.put("msg", msg);
+        switch (msg) {
+            case "GetCurrentUser": {
+                List<User> users = userMemoryCache.getAll();
+                Optional<User> currentUser = users.stream().filter(user -> user.getId() == session.getId()).findFirst();
+                if (currentUser.isPresent()) {
+                    resp.put("data", currentUser);
                 }
+                break;
+            }
+            case "GetAllUsers": {
+                List<User> users = userMemoryCache.getAll();
                 resp.put("data", users);
                 break;
             }
         }
         return gson.toJson(resp);
+    }
+
+    private void broadcast(String message) {
+        webSocketSessionSet.forEach((session) -> {
+            try {
+                session.sendMessage(new TextMessage(message));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }
