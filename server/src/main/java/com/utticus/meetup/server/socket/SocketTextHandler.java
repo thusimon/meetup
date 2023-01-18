@@ -41,7 +41,8 @@ public class SocketTextHandler extends TextWebSocketHandler {
         String payload = message.getPayload();
         Map<String, Object> payloadJson = gson.fromJson(payload, Map.class);
         String textResp = socketMessageHandler(payloadJson, session);
-        session.sendMessage(new TextMessage(textResp));
+        WebSocketSession sessionToSend = selectSession(payloadJson, session);
+        sessionToSend.sendMessage(new TextMessage(textResp));
     }
 
     @Override
@@ -75,6 +76,36 @@ public class SocketTextHandler extends TextWebSocketHandler {
         logger.error("Server transport error: {}", exception.getMessage());
     }
 
+    private WebSocketSession selectSession(Map<String, Object> payload, WebSocketSession currentSession) {
+        WebSocketSession selectedSession = currentSession;
+        String msg = (String)payload.get("msg");
+        Object data = payload.get("data");
+        switch (msg) {
+            case "VideoInvite": {
+                Map<String, String> dataMap = (Map<String, String>)data;
+                String toId = dataMap.get("to");
+                Optional<WebSocketSession> toSession = webSocketSessionSet.stream().filter(session -> session.getId().equals(toId)).findFirst();
+                if (toSession.isPresent()) {
+                    selectedSession = toSession.get();
+                }
+                break;
+            }
+            case "VideoInviteReject":
+            case "VideoInviteAccept": {
+                Map<String, Object> dataMap = (Map<String, Object>)data;
+                Map<String, String> fromUser = (Map<String, String>)dataMap.get("from");
+                String fromId = fromUser.get("id");
+                Optional<WebSocketSession> toSession = webSocketSessionSet.stream().filter(session -> session.getId().equals(fromId)).findFirst();
+                if (toSession.isPresent()) {
+                    selectedSession = toSession.get();
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        return selectedSession;
+    }
     private String socketMessageHandler(Map<String, Object> payload, WebSocketSession session) {
         Map<String, Object> resp = new HashMap<>();
         String msg = (String)payload.get("msg");
@@ -83,15 +114,37 @@ public class SocketTextHandler extends TextWebSocketHandler {
         switch (msg) {
             case "GetCurrentUser": {
                 List<User> users = userMemoryCache.getAll();
-                Optional<User> currentUser = users.stream().filter(user -> user.getId() == session.getId()).findFirst();
+                Optional<User> currentUser = users.stream().filter(user -> user.getId().equals(session.getId())).findFirst();
                 if (currentUser.isPresent()) {
-                    resp.put("data", currentUser);
+                    resp.put("data", currentUser.get());
                 }
                 break;
             }
             case "GetAllUsers": {
                 List<User> users = userMemoryCache.getAll();
                 resp.put("data", users);
+                break;
+            }
+            case "VideoInvite": {
+                Map<String, String> dataMap = (Map<String, String>)data;
+                String fromId = dataMap.get("from");
+                String toId = dataMap.get("to");
+                List<User> users = userMemoryCache.getAll();
+                Optional<User> fromUser = users.stream().filter(user -> user.getId().equals(fromId)).findFirst();
+                Optional<User> toUser = users.stream().filter(user -> user.getId().equals(toId)).findFirst();
+                Map<String, Object> sendData = new HashMap<>();
+                if (fromUser.isPresent()) {
+                    sendData.put("from", fromUser.get());
+                }
+                if (toUser.isPresent()) {
+                    sendData.put("to", toUser.get());
+                }
+                resp.put("data", sendData);
+                break;
+            }
+            case "VideoInviteReject":
+            case "VideoInviteAccept": {
+                resp.put("data", data);
                 break;
             }
         }
