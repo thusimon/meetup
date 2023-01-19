@@ -11,6 +11,7 @@ const Room = () => {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [thisUser, setThisUser] = useState<any>({});
   const [videoInvite, setVideoInvite] = useState<any>(null);
+  const [videoInviteResp, setVideoInviteResp] = useState<any>(null);
   useEffect(() => {
     const init = async () => {
       socketListener.registerListener((socketResp: EventDataType) => {
@@ -35,11 +36,12 @@ const Room = () => {
             break;
           }
           case SocketActions.VideoInviteAccept: {
-            console.log('VideoInviteAccept', data);
+            const {from, to} = data;
+            // now we can establish WebRTC connection between from.id and to.id
             break;
           }
           case SocketActions.VideoInviteReject: {
-            console.log('VideoInviteReject', data);
+            setVideoInviteResp(data);
             break;
           }
           default:
@@ -99,6 +101,10 @@ const Room = () => {
     setVideoInvite(null);
   }
 
+  const onVideoInviteRespReject = () => {
+    setVideoInviteResp(null);
+  }
+
   const onVideoInviteReject = () => {
     messager.sendMessage({
       action: ElectronActions.SendSocketMessage,
@@ -128,7 +134,7 @@ const Room = () => {
     if (!videoInvite) {
       return <></>;
     }
-    return <div className='video-invite-container'>
+    return <div className='modal'>
       <p>You have a video call invitation from {videoInvite.from.name}</p>
       <div className='button-group'>
         <button onClick={onVideoInviteAccept}>Accept</button>
@@ -137,9 +143,22 @@ const Room = () => {
     </div>
   }
 
+  const getVideoConsentResp = () => {
+    if (!videoInviteResp) {
+      return <></>;
+    }
+    return <div className='modal'>
+      <p>{videoInviteResp.to.name} has rejected your invitation</p>
+      <div className='button-group'>
+        <button onClick={onVideoInviteRespReject}>OK</button>
+      </div>
+    </div>
+  }
+
   return <div id='room-container'>
     { getUserCards() }
     { getVideoConsent() }
+    { getVideoConsentResp() }
   </div>
 };
 

@@ -8,7 +8,6 @@ class SocketListener {
   }
   registerListener = (callback: (arg: EventDataType) => void) => {
     this.ipcRenderer.on(EventChannelFromSocket, (evt: IpcRendererEvent, evtData: EventDataType) => {
-      console.log(evtData);
       callback(evtData);
     });
   }
