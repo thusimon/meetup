@@ -75,26 +75,27 @@ public class SocketTextHandler extends TextWebSocketHandler {
         logger.error("Server transport error: {}", exception.getMessage());
     }
 
+    private Optional<WebSocketSession> getSessionFromFlow(Object data, String flow) {
+        Map<String, Object> dataMap = (Map<String, Object>)data;
+        Map<String, String> user = (Map<String, String>)dataMap.get(flow);
+        String userId = user.get("id");
+        return webSocketSessionSet.stream().filter(session -> session.getId().equals(userId)).findFirst();
+    }
+
     private WebSocketSession selectSession(Map<String, Object> payload, WebSocketSession currentSession) {
         WebSocketSession selectedSession = currentSession;
         String msg = (String)payload.get("msg");
         Object data = payload.get("data");
         switch (msg) {
-            case "VideoInvite": {
-                Map<String, String> dataMap = (Map<String, String>)data;
-                String toId = dataMap.get("to");
-                Optional<WebSocketSession> toSession = webSocketSessionSet.stream().filter(session -> session.getId().equals(toId)).findFirst();
+            case "VideoInvite", "SendWebRTCOffer": {
+                Optional<WebSocketSession> toSession = getSessionFromFlow(data, "to");
                 if (toSession.isPresent()) {
                     selectedSession = toSession.get();
                 }
                 break;
             }
-            case "VideoInviteReject":
-            case "VideoInviteAccept": {
-                Map<String, Object> dataMap = (Map<String, Object>)data;
-                Map<String, String> fromUser = (Map<String, String>)dataMap.get("from");
-                String fromId = fromUser.get("id");
-                Optional<WebSocketSession> toSession = webSocketSessionSet.stream().filter(session -> session.getId().equals(fromId)).findFirst();
+            case "VideoInviteReject", "VideoInviteAccept": {
+                Optional<WebSocketSession> toSession = getSessionFromFlow(data, "from");
                 if (toSession.isPresent()) {
                     selectedSession = toSession.get();
                 }
@@ -125,9 +126,11 @@ public class SocketTextHandler extends TextWebSocketHandler {
                 break;
             }
             case "VideoInvite": {
-                Map<String, String> dataMap = (Map<String, String>)data;
-                String fromId = dataMap.get("from");
-                String toId = dataMap.get("to");
+                Map<String, Object> dataMap = (Map<String, Object>)data;
+                Map<String, String> fromUserData = (Map<String, String>)dataMap.get("from");
+                Map<String, String> toUserData = (Map<String, String>)dataMap.get("to");
+                String fromId = fromUserData.get("id");
+                String toId = toUserData.get("id");
                 List<User> users = userMemoryCache.getAll();
                 Optional<User> fromUser = users.stream().filter(user -> user.getId().equals(fromId)).findFirst();
                 Optional<User> toUser = users.stream().filter(user -> user.getId().equals(toId)).findFirst();
@@ -142,11 +145,11 @@ public class SocketTextHandler extends TextWebSocketHandler {
                 break;
             }
             case "VideoInviteReject":
-            case "VideoInviteAccept": {
+            case "VideoInviteAccept":
+            case "SendWebRTCOffer": {
                 resp.put("data", data);
                 break;
-            }
-        }
+            }}
         return gson.toJson(resp);
     }
 

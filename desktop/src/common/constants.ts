@@ -31,7 +31,8 @@ export enum SocketActions {
   GetAllUsers = 'GetAllUsers',
   VideoInvite = 'VideoInvite',
   VideoInviteAccept = 'VideoInviteAccept',
-  VideoInviteReject = 'VideoInviteReject'
+  VideoInviteReject = 'VideoInviteReject',
+  SendWebRTCOffer = 'SendWebRTCOffer'
 }
 
 export const VideoStreamConstraints = {

@@ -34,6 +34,17 @@ class WebRTCConnection {
       this.peerConnection.addTrack(track);
     }
   }
+
+  async createOffer() {
+    const rtcOffer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(rtcOffer);
+    rtcOffer.sdp
+    const offer = {
+      sdp: rtcOffer.sdp,
+      type: rtcOffer.type
+    };
+    return offer;
+  }
 }
 
 export default WebRTCConnection;

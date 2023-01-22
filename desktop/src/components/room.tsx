@@ -7,6 +7,7 @@ import CameraOn from '../assets/camera-on.svg';
 import MicOn from '../assets/mic-on.svg';
 
 import './room.scss';
+import SocketListener from "./socket-listener";
 
 const Room = () => {
   const [users, setUsers] = useState([]);
@@ -14,11 +15,12 @@ const Room = () => {
   const [thisUser, setThisUser] = useState<any>({});
   const [videoInvite, setVideoInvite] = useState<any>(null);
   const [videoInviteResp, setVideoInviteResp] = useState<any>(null);
+  const [webRTC, setWebRTC] = useState(null);
   const { dispatch } = useAppContext();
 
   useEffect(() => {
     const init = async () => {
-      socketListener.registerListener((socketResp: EventDataType) => {
+      socketListener.registerListener(async (socketResp: EventDataType) => {
         const {msg, data} = socketResp.data;
         switch (msg) {
           case SocketActions.GetCurrentUser: {
@@ -40,14 +42,29 @@ const Room = () => {
             break;
           }
           case SocketActions.VideoInviteAccept: {
-            const {from, to} = data;
+            // caller: invitation is accepted by callee
             // now we can establish WebRTC connection between from.id and to.id
+            // and actually the callee also has already created a WebRTC connection
+            // caller need to send WebRTC offer to callee
             const webRTC = new WebRTCConnection();
-            dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
+            const offer = await webRTC.createOffer();
+            data.offer = offer;
+            await messager.sendMessage({
+              action: ElectronActions.SendSocketMessage,
+              data: {
+                msg: SocketActions.SendWebRTCOffer,
+                data: data
+              }
+            });
+            //dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
             break;
           }
           case SocketActions.VideoInviteReject: {
             setVideoInviteResp(data);
+            break;
+          }
+          case SocketActions.SendWebRTCOffer: {
+            console.log('send webrtc offer', data);
             break;
           }
           default:
@@ -85,8 +102,8 @@ const Room = () => {
       data: {
         msg: SocketActions.VideoInvite,
         data: {
-          from: thisUser.id,
-          to: selectedUserId
+          from: {id: thisUser.id},
+          to: {id: selectedUserId}
         }
       }
     });
@@ -96,7 +113,11 @@ const Room = () => {
 
   }
 
-  const onVideoInviteAccept = () => {
+  const sendWebRTCOffer = (webRTC: WebRTCConnection) => {
+
+  }
+  const onVideoInviteAccept = async () => {
+    // callee: accept invitation from caller
     messager.sendMessage({
       action: ElectronActions.SendSocketMessage,
       data: {
@@ -106,6 +127,7 @@ const Room = () => {
     });
     setVideoInvite(null);
     const webRTC = new WebRTCConnection();
+
     dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
   }
 
