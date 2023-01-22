@@ -13,7 +13,8 @@ export interface EventDataExType extends EventDataType{
 };
 
 export enum AppContextActions {
-  SetName
+  SetName,
+  SetWebRTCConnection
 };
 
 export enum ElectronActions {

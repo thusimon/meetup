@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { VideoStreamConstraints } from '../common/constants';
+import { useAppContext } from './app-context';
 
 import CameraOn from '../assets/camera-on.svg';
 import CameraOff from '../assets/camera-off.svg';
@@ -11,7 +12,8 @@ const Meeting = () => {
   const smallViedoRef = useRef<HTMLVideoElement>(null);
   const [videoState, setVideoState] = useState(0);
   const [localStream, setLocalStream] = useState<MediaStream>(null);
-  const [removeStream, setRemoteStream] = useState<MediaStream>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream>(null);
+  const {state} = useAppContext();
 
   const webRTCConfiguration = {
     iceServers: [
@@ -22,8 +24,8 @@ const Meeting = () => {
   };
 
   useEffect(() => {
-
-  }, []);
+    console.log('get webRTC connections', state.webRTC);
+  }, [state.webRTC]);
 
   const createPeerConnection = () => {
     const peerConnection = new RTCPeerConnection(webRTCConfiguration);

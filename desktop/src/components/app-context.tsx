@@ -1,8 +1,10 @@
 import { createContext, useContext, useReducer, ReactNode, ReactElement } from 'react';
+import WebRTCConnection from '../common/webRTC';
 import { AppContextActions } from '../common/constants';
 
 export interface ContextDataType {
   name?: string;
+  webRTC?: WebRTCConnection;
 }
 
 export interface ActionType {
@@ -25,6 +27,12 @@ const AppReducer = (state: ContextDataType, action: ActionType): ContextDataType
       return {
         ...state,
         name: data
+      };
+    }
+    case AppContextActions.SetWebRTCConnection: {
+      return {
+        ...state,
+        webRTC: data
       };
     }
     default:

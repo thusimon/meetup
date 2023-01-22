@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { ElectronActions, EventDataType, SocketActions } from "../common/constants";
+import { AppContextActions, ElectronActions, EventDataType, SocketActions } from "../common/constants";
+import { useAppContext } from './app-context';
+import WebRTCConnection from "../common/webRTC";
 
 import CameraOn from '../assets/camera-on.svg';
 import MicOn from '../assets/mic-on.svg';
@@ -12,6 +14,8 @@ const Room = () => {
   const [thisUser, setThisUser] = useState<any>({});
   const [videoInvite, setVideoInvite] = useState<any>(null);
   const [videoInviteResp, setVideoInviteResp] = useState<any>(null);
+  const { dispatch } = useAppContext();
+
   useEffect(() => {
     const init = async () => {
       socketListener.registerListener((socketResp: EventDataType) => {
@@ -38,6 +42,8 @@ const Room = () => {
           case SocketActions.VideoInviteAccept: {
             const {from, to} = data;
             // now we can establish WebRTC connection between from.id and to.id
+            const webRTC = new WebRTCConnection();
+            dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
             break;
           }
           case SocketActions.VideoInviteReject: {
@@ -99,6 +105,8 @@ const Room = () => {
       }
     });
     setVideoInvite(null);
+    const webRTC = new WebRTCConnection();
+    dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
   }
 
   const onVideoInviteRespReject = () => {
