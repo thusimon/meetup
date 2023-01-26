@@ -15,8 +15,8 @@ const Room = () => {
   const [thisUser, setThisUser] = useState<any>({});
   const [videoInvite, setVideoInvite] = useState<any>(null);
   const [videoInviteResp, setVideoInviteResp] = useState<any>(null);
-  const [webRTC, setWebRTC] = useState(null);
-  const { dispatch } = useAppContext();
+  const [webRTC, setWebRTC] = useState<WebRTCConnection>(null);
+  const { state, dispatch } = useAppContext();
 
   useEffect(() => {
     const init = async () => {
@@ -49,6 +49,7 @@ const Room = () => {
             const webRTC = new WebRTCConnection();
             const offer = await webRTC.createOffer();
             data.offer = offer;
+            console.log('52 send webrtc offer', data);
             await messager.sendMessage({
               action: ElectronActions.SendSocketMessage,
               data: {
@@ -56,7 +57,8 @@ const Room = () => {
                 data: data
               }
             });
-            //dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
+            // setWebRTC(webRTC);
+            dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
             break;
           }
           case SocketActions.VideoInviteReject: {
@@ -64,7 +66,20 @@ const Room = () => {
             break;
           }
           case SocketActions.SendWebRTCOffer: {
-            console.log('send webrtc offer', data);
+            console.log('68 on send webrtc offer', data);
+            console.log(state, webRTC);
+            // const webRTC = state.webRTC;
+            await webRTC.peerConnection.setRemoteDescription(data.offer);
+            const answer = await webRTC.peerConnection.createAnswer();
+            console.log(72, answer)
+            await webRTC.peerConnection.setLocalDescription(answer);
+            // await messager.sendMessage({
+            //   action: ElectronActions.SendSocketMessage,
+            //   data: {
+            //     msg: SocketActions.SendWebRTCAnswer,
+            //     data: data
+            //   }
+            // });
             break;
           }
           default:
@@ -118,6 +133,10 @@ const Room = () => {
   }
   const onVideoInviteAccept = async () => {
     // callee: accept invitation from caller
+    setVideoInvite(null);
+    const webRTC = new WebRTCConnection();
+    setWebRTC(webRTC);
+    dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
     messager.sendMessage({
       action: ElectronActions.SendSocketMessage,
       data: {
@@ -125,10 +144,6 @@ const Room = () => {
         data: videoInvite
       }
     });
-    setVideoInvite(null);
-    const webRTC = new WebRTCConnection();
-
-    dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
   }
 
   const onVideoInviteRespReject = () => {
