@@ -87,7 +87,7 @@ public class SocketTextHandler extends TextWebSocketHandler {
         String msg = (String)payload.get("msg");
         Object data = payload.get("data");
         switch (msg) {
-            case "VideoInvite", "SendWebRTCOffer": {
+            case "VideoInvite", "SendWebRTCOffer", "SendWebRTCAnswer": {
                 Optional<WebSocketSession> toSession = getSessionFromFlow(data, "to");
                 if (toSession.isPresent()) {
                     selectedSession = toSession.get();
@@ -144,9 +144,7 @@ public class SocketTextHandler extends TextWebSocketHandler {
                 resp.put("data", sendData);
                 break;
             }
-            case "VideoInviteReject":
-            case "VideoInviteAccept":
-            case "SendWebRTCOffer": {
+            case "VideoInviteReject", "VideoInviteAccept", "SendWebRTCOffer", "SendWebRTCAnswer": {
                 resp.put("data", data);
                 break;
             }}

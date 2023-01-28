@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AppContextActions, ElectronActions, EventDataType, SocketActions } from "../common/constants";
-import { useAppContext } from './app-context';
+import { ContextDataType, useAppContext } from './app-context';
 import WebRTCConnection from "../common/webRTC";
 
 import CameraOn from '../assets/camera-on.svg';
@@ -100,7 +100,14 @@ const Room = () => {
       });
     }
     // init();
-  }, []);
+    console.log('got webRTC offer', state.webRTC, state.webRTCOffer);
+    handleWebRTCOffer(state);
+  }, [state.webRTCOffer]);
+
+  useEffect(() => {
+    console.log('got webRTC answer', state.webRTC, state.webRTCAnswer);
+    handleWebRTCAnswer(state);
+  }, [state.webRTCAnswer]);
 
   const onUserClick = (evt: React.MouseEvent) => {
     const id = evt.currentTarget.getAttribute('data-se');
@@ -112,12 +119,13 @@ const Room = () => {
   }
 
   const onVideoCallClick = (evt: React.MouseEvent) => {
+    const me = state.me;
     messager.sendMessage({
       action: ElectronActions.SendSocketMessage,
       data: {
         msg: SocketActions.VideoInvite,
         data: {
-          from: {id: thisUser.id},
+          from: {id: me.id},
           to: {id: selectedUserId}
         }
       }
@@ -133,10 +141,13 @@ const Room = () => {
   }
   const onVideoInviteAccept = async () => {
     // callee: accept invitation from caller
-    setVideoInvite(null);
+    const videoInvite = state.videoInvite;
+    if (!videoInvite) {
+      return;
+    }
     const webRTC = new WebRTCConnection();
-    setWebRTC(webRTC);
-    // dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
+    dispatch({type: AppContextActions.SetVideoInviteAccept, data: webRTC});
+    dispatch({type: AppContextActions.SetVideoInvite, data: null});
     messager.sendMessage({
       action: ElectronActions.SendSocketMessage,
       data: {
@@ -147,23 +158,60 @@ const Room = () => {
   }
 
   const onVideoInviteRespReject = () => {
-    setVideoInviteResp(null);
+    dispatch({type: AppContextActions.SetVideoInviteReject, data: null});
   }
 
   const onVideoInviteReject = () => {
+    dispatch({type: AppContextActions.SetVideoInvite, data: null});
     messager.sendMessage({
       action: ElectronActions.SendSocketMessage,
       data: {
         msg: SocketActions.VideoInviteReject,
-        data: videoInvite
+        data: state.videoInvite
       }
     });
-    setVideoInvite(null);
   }
 
+  const handleWebRTCOffer = async (state: ContextDataType) => {
+    const { webRTC, webRTCOffer } = state;
+    if (!webRTC || !webRTCOffer) {
+      return;
+    }
+    await webRTC.peerConnection.setRemoteDescription(new RTCSessionDescription(webRTCOffer.offer));
+    const webRTCAnswer = await webRTC.peerConnection.createAnswer();
+    await webRTC.peerConnection.setLocalDescription(webRTCAnswer);
+    const answer = {
+      sdp: webRTCAnswer.sdp,
+      type: webRTCAnswer.type
+    };
+    const data = {
+      from: webRTCOffer.from,
+      to: webRTCOffer.to,
+      answer
+    }
+    await messager.sendMessage({
+      action: ElectronActions.SendSocketMessage,
+      data: {
+        msg: SocketActions.SendWebRTCAnswer,
+        data: data
+      }
+    });
+
+  }
+
+  const handleWebRTCAnswer = async (state: ContextDataType) => {
+    const { webRTC, webRTCAnswer } = state;
+    if (!webRTC || !webRTCAnswer) {
+      return;
+    }
+    webRTC.peerConnection.setRemoteDescription(new RTCSessionDescription(webRTCAnswer.answer));
+  }
+  console.log(164, state.webRTC);
   const getUserCards = () => {
+    const users = state.users || [];
+    const me = state.me || {};
     return users.map((user, idx) => {
-      const isSelfUser = user.id === thisUser.id;
+      const isSelfUser = user.id === me.id;
       return <div className='user-row' key={`user-${idx}`}>
         <div className='user-name'>{user.name}</div>
         <button className='user-plus hover-effect' onClick={onUserClick} data-se={user.id} disabled={isSelfUser}></button>
@@ -176,6 +224,7 @@ const Room = () => {
   };
 
   const getVideoConsent = () => {
+    const videoInvite = state.videoInvite;
     if (!videoInvite) {
       return <></>;
     }
@@ -189,15 +238,19 @@ const Room = () => {
   }
 
   const getVideoConsentResp = () => {
+    const videoInviteResp = state.videoInviteResp;
     if (!videoInviteResp) {
       return <></>;
     }
-    return <div className='modal'>
-      <p>{videoInviteResp.to.name} has rejected your invitation</p>
-      <div className='button-group'>
-        <button onClick={onVideoInviteRespReject}>OK</button>
+
+    if (videoInviteResp.type = 'reject') {
+      return <div className='modal'>
+        <p>{videoInviteResp.to.name} has rejected your invitation</p>
+        <div className='button-group'>
+          <button onClick={onVideoInviteRespReject}>OK</button>
+        </div>
       </div>
-    </div>
+    }
   }
 
   return <div id='room-container'>

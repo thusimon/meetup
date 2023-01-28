@@ -52,12 +52,18 @@ const AppContextMessager = () => {
           }
           case SocketActions.VideoInviteReject: {
             console.log('SetVideoInviteReject', data);
+            data.type = 'reject';
             dispatch({type: AppContextActions.SetVideoInviteReject, data});
             break;
           }
           case SocketActions.SendWebRTCOffer: {
-            console.log('SetWebRTCOffer', data);
-            dispatch({type: AppContextActions.SetWebRTCOffer, data});
+            console.log('SendWebRTCOffer', data);
+            dispatch({type: AppContextActions.SendWebRTCOffer, data});
+            break;
+          }
+          case SocketActions.SendWebRTCAnswer: {
+            console.log('SendWebRTCAnswer', data);
+            dispatch({type: AppContextActions.SendWebRTCAnswer, data});
             break;
           }
           default:

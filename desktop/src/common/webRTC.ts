@@ -36,14 +36,21 @@ class WebRTCConnection {
   }
 
   async createOffer() {
-    const rtcOffer = await this.peerConnection.createOffer();
-    await this.peerConnection.setLocalDescription(rtcOffer);
-    rtcOffer.sdp
+    const webRTCOffer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(webRTCOffer);
     const offer = {
-      sdp: rtcOffer.sdp,
-      type: rtcOffer.type
+      sdp: webRTCOffer.sdp,
+      type: webRTCOffer.type
     };
     return offer;
+  }
+
+  async createAnswer() {
+    const webRTCAnswer = await this.peerConnection.createAnswer();
+    const answer = {
+      sdp: webRTCAnswer.sdp,
+      type: webRTCAnswer.type
+    }
   }
 }
 
