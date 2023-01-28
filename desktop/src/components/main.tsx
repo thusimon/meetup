@@ -4,14 +4,14 @@ import Room from './room';
 import Meeting from './meeting';
 
 import './main.scss';
+import AppContextMessager from './app-context-messager';
 
 const Main = () => {
-  const { state } = useAppContext();
-
   useEffect(() => {
   }, []);
 
   return <div id='main-container'>
+    <AppContextMessager />
     <Room />
     <Meeting />
     <div id='chat-container'></div>

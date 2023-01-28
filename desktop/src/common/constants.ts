@@ -14,7 +14,12 @@ export interface EventDataExType extends EventDataType{
 
 export enum AppContextActions {
   SetName,
-  SetWebRTCConnection
+  SetCurrentUser,
+  SetUsers,
+  SetVideoInvite,
+  SetVideoInviteAccept,
+  SetVideoInviteReject,
+  SetWebRTCOffer
 };
 
 export enum ElectronActions {

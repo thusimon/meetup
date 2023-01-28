@@ -58,7 +58,7 @@ const Room = () => {
               }
             });
             // setWebRTC(webRTC);
-            dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
+            // dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
             break;
           }
           case SocketActions.VideoInviteReject: {
@@ -99,7 +99,7 @@ const Room = () => {
         }
       });
     }
-    init();
+    // init();
   }, []);
 
   const onUserClick = (evt: React.MouseEvent) => {
@@ -136,7 +136,7 @@ const Room = () => {
     setVideoInvite(null);
     const webRTC = new WebRTCConnection();
     setWebRTC(webRTC);
-    dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
+    // dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
     messager.sendMessage({
       action: ElectronActions.SendSocketMessage,
       data: {
