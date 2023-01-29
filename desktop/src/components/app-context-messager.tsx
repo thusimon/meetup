@@ -37,7 +37,12 @@ const AppContextMessager = () => {
             // and actually the callee also has already created a WebRTC connection
             // caller need to send WebRTC offer to callee
             const webRTC = new WebRTCConnection();
-            const offer = await webRTC.createOffer();
+            const webRTCOffer = await webRTC.peerConnection.createOffer();
+            await webRTC.peerConnection.setLocalDescription(webRTCOffer);
+            const offer = {
+              sdp: webRTCOffer.sdp,
+              type: webRTCOffer.type
+            };
             data.offer = offer;
             await messager.sendMessage({
               action: ElectronActions.SendSocketMessage,

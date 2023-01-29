@@ -2,7 +2,7 @@
 const configuration = {
   iceServers: [
     {
-      urls: 'stun:stun2.l.google.com:19302'
+      urls: 'stun:stun.l.google.com:19302	'
     }
   ]
 }
@@ -12,9 +12,9 @@ class WebRTCConnection {
   remoteStream: MediaStream;
   constructor() {
     this.remoteStream = new MediaStream();
-    this.peerConnection = new RTCPeerConnection(configuration);
+    this.peerConnection = new RTCPeerConnection();
     this.peerConnection.onicecandidate = (evt) => {
-      console.log('getting ice candidate from stun server');
+      console.log('getting ice candidate from stun server', evt);
       if(evt.candidate) {
         // send candidate to another peer
       }
@@ -23,6 +23,9 @@ class WebRTCConnection {
       if(this.peerConnection.connectionState === 'connected') {
         console.log('successfully connected with another peer');
       }
+    }
+    this.peerConnection.onsignalingstatechange = (e) => {
+      console.log('onsignalingstatechange', this.peerConnection.signalingState);
     }
     this.peerConnection.ontrack = (evt) => {
       this.remoteStream.addTrack(evt.track);
