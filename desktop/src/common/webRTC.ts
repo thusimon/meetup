@@ -10,11 +10,13 @@ const configuration = {
 class WebRTCConnection {
   peerConnection: RTCPeerConnection;
   remoteStream: MediaStream;
+  dataChannel: RTCDataChannel;
   constructor() {
     this.remoteStream = new MediaStream();
-    this.peerConnection = new RTCPeerConnection();
+    this.peerConnection = new RTCPeerConnection(configuration);
+    this.dataChannel = this.peerConnection.createDataChannel('dataChannel');
     this.peerConnection.onicecandidate = (evt) => {
-      console.log('getting ice candidate from stun server', evt);
+      console.log('LuDebug: getting ice candidate from stun server', evt);
       if(evt.candidate) {
         // send candidate to another peer
       }
@@ -35,24 +37,6 @@ class WebRTCConnection {
   addTrack(stream: MediaStream) {
     for (const track of stream.getTracks()) {
       this.peerConnection.addTrack(track);
-    }
-  }
-
-  async createOffer() {
-    const webRTCOffer = await this.peerConnection.createOffer();
-    await this.peerConnection.setLocalDescription(webRTCOffer);
-    const offer = {
-      sdp: webRTCOffer.sdp,
-      type: webRTCOffer.type
-    };
-    return offer;
-  }
-
-  async createAnswer() {
-    const webRTCAnswer = await this.peerConnection.createAnswer();
-    const answer = {
-      sdp: webRTCAnswer.sdp,
-      type: webRTCAnswer.type
     }
   }
 }

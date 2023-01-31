@@ -7,99 +7,12 @@ import CameraOn from '../assets/camera-on.svg';
 import MicOn from '../assets/mic-on.svg';
 
 import './room.scss';
-import SocketListener from "./socket-listener";
 
 const Room = () => {
-  const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [thisUser, setThisUser] = useState<any>({});
-  const [videoInvite, setVideoInvite] = useState<any>(null);
-  const [videoInviteResp, setVideoInviteResp] = useState<any>(null);
-  const [webRTC, setWebRTC] = useState<WebRTCConnection>(null);
   const { state, dispatch } = useAppContext();
 
   useEffect(() => {
-    const init = async () => {
-      socketListener.registerListener(async (socketResp: EventDataType) => {
-        const {msg, data} = socketResp.data;
-        switch (msg) {
-          case SocketActions.GetCurrentUser: {
-            if (data) {
-              setThisUser(data);
-            }
-            break;
-          }
-          case SocketActions.GetAllUsers: {
-            if (data) {
-              setUsers(data);
-            }
-            break;
-          }
-          case SocketActions.VideoInvite: {
-            if (data) {
-              setVideoInvite(data);
-            }
-            break;
-          }
-          case SocketActions.VideoInviteAccept: {
-            // caller: invitation is accepted by callee
-            // now we can establish WebRTC connection between from.id and to.id
-            // and actually the callee also has already created a WebRTC connection
-            // caller need to send WebRTC offer to callee
-            const webRTC = new WebRTCConnection();
-            const offer = await webRTC.createOffer();
-            data.offer = offer;
-            console.log('52 send webrtc offer', data);
-            await messager.sendMessage({
-              action: ElectronActions.SendSocketMessage,
-              data: {
-                msg: SocketActions.SendWebRTCOffer,
-                data: data
-              }
-            });
-            // setWebRTC(webRTC);
-            // dispatch({type: AppContextActions.SetWebRTCConnection, data: webRTC});
-            break;
-          }
-          case SocketActions.VideoInviteReject: {
-            setVideoInviteResp(data);
-            break;
-          }
-          case SocketActions.SendWebRTCOffer: {
-            console.log('68 on send webrtc offer', data);
-            console.log(state, webRTC);
-            // const webRTC = state.webRTC;
-            await webRTC.peerConnection.setRemoteDescription(data.offer);
-            const answer = await webRTC.peerConnection.createAnswer();
-            console.log(72, answer)
-            await webRTC.peerConnection.setLocalDescription(answer);
-            // await messager.sendMessage({
-            //   action: ElectronActions.SendSocketMessage,
-            //   data: {
-            //     msg: SocketActions.SendWebRTCAnswer,
-            //     data: data
-            //   }
-            // });
-            break;
-          }
-          default:
-            break;
-        }
-      });
-      await messager.sendMessage({
-        action: ElectronActions.SendSocketMessage,
-        data: {
-          msg: SocketActions.GetCurrentUser
-        }
-      });
-      await messager.sendMessage({
-        action: ElectronActions.SendSocketMessage,
-        data: {
-          msg: SocketActions.GetAllUsers
-        }
-      });
-    }
-    // init();
     console.log('got webRTC offer', state.webRTC, state.webRTCOffer);
     handleWebRTCOffer(state);
   }, [state.webRTCOffer]);
@@ -206,6 +119,7 @@ const Room = () => {
     }
     webRTC.peerConnection.setRemoteDescription(new RTCSessionDescription(webRTCAnswer.answer));
   }
+
   console.log(164, state.webRTC);
   const getUserCards = () => {
     const users = state.users || [];
