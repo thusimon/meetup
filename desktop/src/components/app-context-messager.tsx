@@ -36,7 +36,7 @@ const AppContextMessager = () => {
             // now we can establish WebRTC connection between from.id and to.id
             // and actually the callee also has already created a WebRTC connection
             // caller need to send WebRTC offer to callee
-            const webRTC = new WebRTCConnection();
+            const webRTC = new WebRTCConnection(data);
             const webRTCOffer = await webRTC.peerConnection.createOffer();
             await webRTC.peerConnection.setLocalDescription(webRTCOffer);
             const offer = {

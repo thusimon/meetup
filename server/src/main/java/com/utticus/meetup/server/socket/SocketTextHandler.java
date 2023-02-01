@@ -101,6 +101,10 @@ public class SocketTextHandler extends TextWebSocketHandler {
                 }
                 break;
             }
+            case "SendICECandidate": {
+
+                break;
+            }
             default:
                 break;
         }
@@ -147,7 +151,13 @@ public class SocketTextHandler extends TextWebSocketHandler {
             case "VideoInviteReject", "VideoInviteAccept", "SendWebRTCOffer", "SendWebRTCAnswer": {
                 resp.put("data", data);
                 break;
-            }}
+            }
+            case "SendICECandidate":
+                Map<String, Object> dataMap = (Map<String, Object>)data;
+                Map<String, String> candidate = (Map<String, String>)dataMap.get("candidate");
+                // get "from" and "to" ids, and send the candidate to the non-self session
+                break;
+        }
         return gson.toJson(resp);
     }
 

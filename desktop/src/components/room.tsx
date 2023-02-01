@@ -58,7 +58,7 @@ const Room = () => {
     if (!videoInvite) {
       return;
     }
-    const webRTC = new WebRTCConnection();
+    const webRTC = new WebRTCConnection(videoInvite);
     dispatch({type: AppContextActions.SetVideoInviteAccept, data: webRTC});
     dispatch({type: AppContextActions.SetVideoInvite, data: null});
     messager.sendMessage({

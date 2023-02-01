@@ -1,3 +1,5 @@
+import { ElectronActions, SocketActions } from "./constants";
+
 // TODO: use my own stun server
 const configuration = {
   iceServers: [
@@ -11,14 +13,28 @@ class WebRTCConnection {
   peerConnection: RTCPeerConnection;
   remoteStream: MediaStream;
   dataChannel: RTCDataChannel;
-  constructor() {
+  flow: any;
+  constructor(flowData: any) {
+    this.flow = flowData;
     this.remoteStream = new MediaStream();
     this.peerConnection = new RTCPeerConnection(configuration);
     this.dataChannel = this.peerConnection.createDataChannel('dataChannel');
     this.peerConnection.onicecandidate = (evt) => {
-      console.log('LuDebug: getting ice candidate from stun server', evt);
       if(evt.candidate) {
+        const candidate = evt.candidate;
+        console.log('getting ice candidate from stun server', candidate, candidate.toJSON());
         // send candidate to another peer
+        const data = {
+          ...this.flow,
+          candidate: candidate.toJSON()
+        };
+        messager.sendMessage({
+          action: ElectronActions.SendSocketMessage,
+          data: {
+            msg: SocketActions.SendICECandidate,
+            data: data
+          }
+        });
       }
     }
     this.peerConnection.onconnectionstatechange = (evt) => {
