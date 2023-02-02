@@ -24,37 +24,8 @@ const Meeting = () => {
   };
 
   useEffect(() => {
-    console.log('get webRTC connections', state.webRTC);
-  }, [state.webRTC]);
-
-  const createPeerConnection = () => {
-    const peerConnection = new RTCPeerConnection(webRTCConfiguration);
-
-    peerConnection.onicecandidate = (event) => {
-      console.log('getting ice candidate');
-      if (event.candidate) {
-        // send candidate to another peer
-      }
-    }
-
-    peerConnection.onconnectionstatechange = (event) => {
-      if (peerConnection.connectionState === 'connected') {
-        console.log('successfully connected to another peer');
-      }
-    }
-
-    const remoteStream = new MediaStream();
-    setRemoteStream(remoteStream);
-    peerConnection.ontrack = (event) => {
-      remoteStream.addTrack(event.track);
-    }
-
-    if (localStream) {
-      for(const track of localStream.getTracks()) {
-        peerConnection.addTrack(track, localStream);
-      }
-    }
-  }
+    console.log(27, 'get webRTC connections', state.iceCandidate);
+  }, [state.iceCandidate]);
 
   const videoMetadataLoadHandler = function() {
     this.play();

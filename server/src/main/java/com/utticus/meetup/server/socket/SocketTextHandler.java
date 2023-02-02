@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -102,7 +103,18 @@ public class SocketTextHandler extends TextWebSocketHandler {
                 break;
             }
             case "SendICECandidate": {
-
+                Optional<WebSocketSession> fromSession = getSessionFromFlow(data, "from");
+                Optional<WebSocketSession> toSession = getSessionFromFlow(data, "to");
+                if (!fromSession.isPresent() || !toSession.isPresent()) {
+                    logger.warn("missing WebSocketSession while exchanging ICE candidate");
+                    break;
+                }
+                // get "from" and "to" ids, and send the candidate to the non-self session
+                if (currentSession.getId().equals(fromSession.get().getId())) {
+                    selectedSession = toSession.get();
+                } else {
+                    selectedSession = fromSession.get();
+                }
                 break;
             }
             default:
@@ -148,15 +160,10 @@ public class SocketTextHandler extends TextWebSocketHandler {
                 resp.put("data", sendData);
                 break;
             }
-            case "VideoInviteReject", "VideoInviteAccept", "SendWebRTCOffer", "SendWebRTCAnswer": {
+            case "VideoInviteReject", "VideoInviteAccept", "SendWebRTCOffer", "SendWebRTCAnswer", "SendICECandidate": {
                 resp.put("data", data);
                 break;
             }
-            case "SendICECandidate":
-                Map<String, Object> dataMap = (Map<String, Object>)data;
-                Map<String, String> candidate = (Map<String, String>)dataMap.get("candidate");
-                // get "from" and "to" ids, and send the candidate to the non-self session
-                break;
         }
         return gson.toJson(resp);
     }

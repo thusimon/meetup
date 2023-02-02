@@ -11,6 +11,7 @@ export interface ContextDataType {
   webRTC?: WebRTCConnection;
   webRTCOffer?: any;
   webRTCAnswer?: any;
+  iceCandidate?: any;
 }
 
 export interface ActionType {
@@ -75,6 +76,12 @@ const AppReducer = (state: ContextDataType, action: ActionType): ContextDataType
       return {
         ...state,
         webRTCAnswer: data
+      }
+    }
+    case AppContextActions.SendICECandidate: {
+      return {
+        ...state,
+        iceCandidate: data
       }
     }
     default:

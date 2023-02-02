@@ -71,6 +71,11 @@ const AppContextMessager = () => {
             dispatch({type: AppContextActions.SendWebRTCAnswer, data});
             break;
           }
+          case SocketActions.SendICECandidate: {
+            console.log(75, 'SendICECandidate', data);
+            dispatch({type: AppContextActions.SendICECandidate, data});
+            break;
+          }
           default:
             break;
         }

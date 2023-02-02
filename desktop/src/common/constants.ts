@@ -20,7 +20,8 @@ export enum AppContextActions {
   SetVideoInviteAccept,
   SetVideoInviteReject,
   SendWebRTCOffer,
-  SendWebRTCAnswer
+  SendWebRTCAnswer,
+  SendICECandidate
 };
 
 export enum ElectronActions {
