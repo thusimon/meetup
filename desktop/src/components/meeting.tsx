@@ -15,16 +15,14 @@ const Meeting = () => {
   const [remoteStream, setRemoteStream] = useState<MediaStream>(null);
   const {state} = useAppContext();
 
-  const webRTCConfiguration = {
-    iceServers: [
-      {
-        urls: 'stun:stun2.1.google.com:19302'
-      }
-    ]
-  };
-
   useEffect(() => {
-    console.log(27, 'get webRTC connections', state.iceCandidate);
+    const iceCandidate = state.iceCandidate;
+    if (iceCandidate && iceCandidate.candidate && state.webRTC) {
+      const candidate = iceCandidate.candidate;
+      const webRTC = state.webRTC;
+      webRTC.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      console.log(25, 'added candidate', candidate)
+    }
   }, [state.iceCandidate]);
 
   const videoMetadataLoadHandler = function() {
