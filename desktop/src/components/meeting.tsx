@@ -49,8 +49,10 @@ const Meeting = () => {
       setVideoState(1);
       const stream = await navigator.mediaDevices.getUserMedia(VideoStreamConstraints);
       setLocalStream(stream);
-      const videoEle = mainViedoRef.current;
-      videoEle.srcObject = stream;
+      const videoEle = smallViedoRef.current;
+      state.webRTC.onTrack(videoEle);
+      state.webRTC.addTrack(stream);
+      mainViedoRef.current.srcObject = stream;
       setVideoState(2);
       // videoEle.addEventListener('loadedmetadata', () => {
       //   videoMetadataLoadHandler();

@@ -19,6 +19,9 @@ class WebRTCConnection {
     this.remoteStream = new MediaStream();
     this.peerConnection = new RTCPeerConnection(configuration);
     this.dataChannel = this.peerConnection.createDataChannel('dataChannel');
+    this.dataChannel.onmessage = function(event) {
+      console.log('Message:', event.data);
+    };
     this.peerConnection.onicecandidate = (evt) => {
       if(evt.candidate) {
         const candidate = evt.candidate;
@@ -45,14 +48,24 @@ class WebRTCConnection {
     this.peerConnection.onsignalingstatechange = (e) => {
       console.log('onsignalingstatechange', this.peerConnection.signalingState);
     }
-    this.peerConnection.ontrack = (evt) => {
-      this.remoteStream.addTrack(evt.track);
-    }
+    this.peerConnection.ondatachannel = (evt) => {
+      this.dataChannel = evt.channel;
+    };
   }
 
   addTrack(stream: MediaStream) {
     for (const track of stream.getTracks()) {
       this.peerConnection.addTrack(track);
+    }
+  }
+  onTrack(videoElement: HTMLVideoElement) {
+    this.peerConnection.ontrack = (evt) => {
+      if (evt.streams && evt.streams[0]) {
+        videoElement.srcObject = evt.streams[0];
+      } else {
+        videoElement.srcObject = this.remoteStream;
+        this.remoteStream.addTrack(evt.track);
+      }
     }
   }
 }
